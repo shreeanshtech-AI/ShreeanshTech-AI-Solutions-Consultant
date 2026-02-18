@@ -126,7 +126,6 @@ const App: React.FC = () => {
     } else if (currentStep === Step.QUALIFICATION) {
       processQualification(msgText);
     } else if (currentStep === Step.CONTACT_COLLECTION) {
-      // Basic heuristic: check for email/phone patterns
       if (msgText.includes('@') || msgText.match(/\d{7,}/)) {
         submitLead(msgText);
       } else {
@@ -171,10 +170,9 @@ const App: React.FC = () => {
   };
 
   const submitLead = async (contactInfo: string) => {
-    setLeadData(prev => ({ ...prev, email: contactInfo })); // Simplified
+    setLeadData(prev => ({ ...prev, email: contactInfo })); 
     setIsTyping(true);
     
-    // Generate AI Summary using existing service
     const conversationHistory = messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
     const summary = await generateInternalSummary(leadData, conversationHistory);
     
@@ -183,9 +181,6 @@ const App: React.FC = () => {
     setIsTyping(false);
   };
 
-  /**
-   * Voice Mode / Live API Implementation
-   */
   const startVoiceMode = async () => {
     try {
       setVoiceError(null);
@@ -197,7 +192,6 @@ const App: React.FC = () => {
       setIsLiveActive(true);
       setIsModelThinking(true);
       
-      // Initialize API client inside the function to ensure fresh context
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 16000});
@@ -214,13 +208,11 @@ const App: React.FC = () => {
         callbacks: {
           onopen: () => {
             setIsModelThinking(false);
-            // Stream audio from mic
             const source = inputCtx.createMediaStreamSource(stream);
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
             scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
               const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
               const pcmBlob = createBlob(inputData);
-              // Send only when resolved
               sessionPromise.then((session) => {
                 session.sendRealtimeInput({ media: pcmBlob });
               });
@@ -229,13 +221,11 @@ const App: React.FC = () => {
             scriptProcessor.connect(inputCtx.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // Handle output transcription
             if (message.serverContent?.outputTranscription) {
               setTranscriptText(prev => prev + message.serverContent!.outputTranscription!.text);
             }
 
-            // Handle audio output
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio) {
               const oCtx = audioContextRef.current?.output;
               if (oCtx) {
@@ -253,9 +243,10 @@ const App: React.FC = () => {
               }
             }
 
-            // Interrupt handling
             if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => s.stop());
+              sourcesRef.current.forEach(s => {
+                try { s.stop(); } catch(e) {}
+              });
               sourcesRef.current.clear();
               nextStartTimeRef.current = 0;
             }
@@ -296,11 +287,13 @@ const App: React.FC = () => {
     }
     
     if (audioContextRef.current) {
-      audioContextRef.current.input.close();
-      audioContextRef.current.output.close();
+      audioContextRef.current.input.close().catch(() => {});
+      audioContextRef.current.output.close().catch(() => {});
     }
     
-    sourcesRef.current.forEach(s => s.stop());
+    sourcesRef.current.forEach(s => {
+      try { s.stop(); } catch(e) {}
+    });
     sourcesRef.current.clear();
     
     sessionPromiseRef.current?.then(s => s.close());
@@ -309,7 +302,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans">
-      {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -336,7 +328,6 @@ const App: React.FC = () => {
       </header>
 
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden max-w-[1600px] mx-auto w-full">
-        {/* Progress Sidebar */}
         <aside className="w-full md:w-80 border-r border-slate-800 p-6 flex flex-col gap-8 bg-slate-900/20">
           <div>
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Discovery Phase</h2>
@@ -373,7 +364,6 @@ const App: React.FC = () => {
           </div>
         </aside>
 
-        {/* Chat Interface */}
         <section className="flex-1 flex flex-col relative bg-slate-950">
           <div 
             ref={scrollRef}
@@ -483,7 +473,6 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* Input Area */}
           <div className="p-4 border-t border-slate-800 bg-slate-900/50">
             <div className="max-w-4xl mx-auto relative">
               <input 
@@ -504,7 +493,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Voice UI Overlay */}
           {isVoiceMode && (
             <div className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center">
               <button 
