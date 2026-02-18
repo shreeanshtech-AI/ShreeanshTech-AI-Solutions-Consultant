@@ -1,5 +1,7 @@
 {
   "name": "ShreeanshTech AI Solutions Consultant",
-  "description": "A professional, structured IT advisory platform that qualifies leads and provides solution-oriented recommendations for cybersecurity, software development, AI automation, and web development.",
-  "requestFramePermissions": []
+  "description": "A professional, structured IT advisory platform with a high-end talking AI sales agent for cybersecurity, software development, and automation solutions.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }

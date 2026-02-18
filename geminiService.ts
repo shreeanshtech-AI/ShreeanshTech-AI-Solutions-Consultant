@@ -3,53 +3,60 @@ import { GoogleGenAI } from "@google/genai";
 import { LeadData, LeadType } from "./types";
 
 const PROMPT_SYSTEM_INSTRUCTION = `
-You are ShreeanshTech AI Support & Solutions Consultant, a professional IT advisory representative.
-Your tone is consultative, confident, and business-oriented.
+You are the ShreeanshTech Lead Intelligence Analyst. 
+Your objective is to transform raw conversation transcripts and form data into a high-fidelity Executive Advisory Brief.
 
-Based on the provided conversation history and collected data, your task is to:
-1. Determine the 'Lead Type' (High Intent, Medium Intent, or Early Stage).
-   - High Intent: Clear requirements, specific budget, and immediate timeline.
-   - Medium Intent: Clear requirements but vague on budget or timeline.
-   - Early Stage: Just exploring options.
-2. Generate a 'Notes for Technical Team' section that highlights technical complexities or specific opportunities.
-3. Consolidate all information into a structured internal summary.
+ANALYTICAL FRAMEWORK:
+1. LEAD CLASSIFICATION:
+   - HIGH INTENT: Explicit technical requirements, budget transparency, and a defined deployment window (< 3 months).
+   - MEDIUM INTENT: Strategic interest present but fiscal or temporal parameters are still evolving.
+   - EARLY STAGE: Informational discovery phase.
 
-Return a JSON object that matches the lead summary structure.
+2. STRATEGIC INSIGHTS:
+   - Identify latent pain points not explicitly stated by the user.
+   - Map user needs to specific ShreeanshTech service pillars (Cybersecurity, ERP/Software, AI/Automation, Web Ecosystems).
+
+3. TECHNICAL SPECIFICATIONS:
+   - Translate business needs into technical requirements (e.g., "Need to track inventory" -> "Real-time SQL-based inventory management system with API hooks for external logistics").
+
+Ensure the 'Notes for Technical Team' are highly specific, professional, and actionable.
+Return a structured JSON object.
 `;
 
 export const generateInternalSummary = async (leadData: LeadData, conversationHistory: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const prompt = `
-    Analyze this conversation and structured data:
+    PERFORM STRATEGIC ANALYSIS ON THE FOLLOWING DATASET:
     
-    CONVERSATION HISTORY:
+    [TRANSCRIPT]
     ${conversationHistory}
     
-    STRUCTURED DATA:
+    [STRUCTURED LEAD DATA]
     ${JSON.stringify(leadData, null, 2)}
     
-    Please provide:
-    1. Lead Type Assessment.
-    2. Executive Summary of needs.
-    3. Technical Notes.
+    DELIVERABLES:
+    1. Lead Type (High/Medium/Early).
+    2. Executive Summary (Concise but high-impact).
+    3. Technical Recommendations & Notes for the Engineering Team.
     
-    Return as JSON.
+    RETURN FORMAT: JSON only.
   `;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       contents: prompt,
       config: {
         systemInstruction: PROMPT_SYSTEM_INSTRUCTION,
-        responseMimeType: "application/json"
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 4000 }
       }
     });
 
     return JSON.parse(response.text || '{}');
   } catch (error) {
-    console.error("Error generating summary:", error);
+    console.error("Error generating high-fidelity summary:", error);
     return null;
   }
 };
