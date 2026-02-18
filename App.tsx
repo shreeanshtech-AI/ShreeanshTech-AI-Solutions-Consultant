@@ -17,24 +17,18 @@ import {
   ClipboardList, 
   Send,
   User,
-  Building2,
-  Calendar,
   CheckCircle2,
-  ArrowRight,
   Mic,
   MicOff,
   X,
-  PhoneCall,
-  ChevronDown,
   Sparkles,
-  Waves,
-  AlertCircle,
-  LayoutDashboard,
   Zap,
   Lock,
-  MessageSquare,
   BarChart3,
-  ExternalLink
+  MoreVertical,
+  ArrowLeft,
+  Settings,
+  AlertCircle
 } from 'lucide-react';
 
 const INITIAL_LEAD_DATA: LeadData = {
@@ -52,21 +46,10 @@ const INITIAL_LEAD_DATA: LeadData = {
 };
 
 const SYSTEM_INSTRUCTION = `You are the ShreeanshTech Elite IT Solutions Architect & Consultant. 
-Your persona is high-authority, technically profound, and strategically focused. You speak with precision and clarity.
+Your persona is high-authority, technically profound, and strategically focused.
 
-KNOWLEDGE DOMAINS:
-1. CYBERSECURITY: Advanced threat detection, SOC-as-a-Service, Zero Trust Architecture, Palo Alto/Fortinet integrations, and Ransomware remediation.
-2. SOFTWARE ENGINEERING: Scalable MERN/Python stacks, High-concurrency ERP systems, Microservices architecture, and legacy system modernization.
-3. AI & AUTOMATION: Custom LLM fine-tuning, RAG (Retrieval-Augmented Generation) pipelines, multi-agent WhatsApp automation, and RPA.
-4. WEB ECOSYSTEMS: Enterprise-grade transactional portals, SEO-driven corporate branding, and high-performance React deployments.
-
-CONSULTATIVE STRATEGY:
-- Use the "Consultative Loop": Listen deeply to the client's business challenge, validate their specific requirements, and then propose a high-level solution architecture.
-- Address nuance: If a user asks for a website, probe if they need a "marketing brochure" or a "conversion engine with API integrations."
-- Handle complex queries: Provide specific tech recommendations (e.g., suggesting PostgreSQL for data integrity or Redis for low-latency caching) when appropriate.
-- Goal: Qualify the prospect's intent and move them toward a scheduled technical consultation. Be polite but maintain an executive-level professionalism. 
-
-Never provide generic answers. Always tailor your response to highlight potential business value and technical superiority.`;
+KNOWLEDGE DOMAINS: Cybersecurity, Software Engineering, AI Automation, Web Ecosystems.
+CONSULTATIVE STRATEGY: Use the Consultative Loop. Listen, validate, propose architecture. Move toward qualification.`;
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<Step>(Step.GREETING);
@@ -74,8 +57,6 @@ const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [qualProgress, setQualProgress] = useState(0);
-  const [finalSummary, setFinalSummary] = useState<any>(null);
   
   // Voice/Live State
   const [isVoiceMode, setIsVoiceMode] = useState(false);
@@ -92,7 +73,7 @@ const App: React.FC = () => {
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    addAssistantMessage("Welcome to ShreeanshTech. I am your Strategic Solutions Advisor.\n\nTo begin our high-level discovery, may I know your name and the organization you represent?");
+    addAssistantMessage("Hello. Welcome to ShreeanshTech. I am your AI Solutions Consultant.\n\nTo begin our discovery, may I know your name and organization?");
   }, []);
 
   useEffect(() => {
@@ -109,7 +90,7 @@ const App: React.FC = () => {
     setTimeout(() => {
       setMessages(prev => [...prev, { role: 'assistant', content, timestamp: new Date() }]);
       setIsTyping(false);
-    }, 800);
+    }, 600);
   };
 
   const handleSendMessage = async (textOverride?: string) => {
@@ -122,14 +103,14 @@ const App: React.FC = () => {
     if (currentStep === Step.GREETING) {
       setLeadData(prev => ({ ...prev, name: msgText }));
       setCurrentStep(Step.ID_REQUIREMENT);
-      addAssistantMessage(`A pleasure to connect with you, ${msgText}. Which technological domain are we prioritizing for your business today?`);
+      addAssistantMessage(`Excellent. ${msgText}, which domain are we prioritizing for your organization today?`);
     } else if (currentStep === Step.QUALIFICATION) {
       processQualification(msgText);
     } else if (currentStep === Step.CONTACT_COLLECTION) {
       if (msgText.includes('@') || msgText.match(/\d{7,}/)) {
         submitLead(msgText);
       } else {
-        addAssistantMessage("Thank you. Could you also provide a preferred email address and phone number for our engineering lead to reach out?");
+        addAssistantMessage("Understood. Please provide your professional email and contact number to finalize the consultation request.");
       }
     }
   };
@@ -137,68 +118,43 @@ const App: React.FC = () => {
   const selectService = (service: ServiceCategory) => {
     setLeadData(prev => ({ ...prev, serviceRequired: service }));
     setCurrentStep(Step.QUALIFICATION);
-    setQualProgress(20);
-    
     const questions: Record<string, string> = {
-      [ServiceCategory.CYBERSECURITY]: "Strategic choice. Are you looking to fortify existing network architecture or seeking a comprehensive audit for compliance standards?",
-      [ServiceCategory.SOFTWARE_DEV]: "Efficiency is key. Is your requirement centered around a centralized ERP system or specialized operational software?",
-      [ServiceCategory.AI_AUTOMATION]: "The competitive edge. Are you exploring customer-facing AI agents or back-office process optimization?",
-      [ServiceCategory.WEB_DEV]: "Your digital storefront. Do you require a high-authority corporate site or a functional transactional ecosystem?",
-      [ServiceCategory.CONSULTATION]: "Understood. Let's explore your current operational bottlenecks. What is the primary objective for this quarter?"
+      [ServiceCategory.CYBERSECURITY]: "Regarding Cybersecurity: Are you seeking a zero-trust architecture deployment or a full-scale vulnerability audit?",
+      [ServiceCategory.SOFTWARE_DEV]: "For Software: Is this for a multi-tenant ERP system or a specific operational management tool?",
+      [ServiceCategory.AI_AUTOMATION]: "AI & Automation: Are we looking at customer-facing conversational agents or internal RAG-based automation?",
+      [ServiceCategory.WEB_DEV]: "Web: Do you require a corporate portal or a transactional e-commerce ecosystem?",
+      [ServiceCategory.CONSULTATION]: "Let's start with your core challenge. What specific bottleneck are you looking to resolve this quarter?"
     };
-
-    addAssistantMessage(questions[service] || "Please describe the scope of the digital transformation you are envisioning.");
+    addAssistantMessage(questions[service]);
   };
 
   const processQualification = (answer: string) => {
-    if (qualProgress < 100) {
-      const nextProgress = Math.min(100, qualProgress + 20);
-      setQualProgress(nextProgress);
-      
-      if (nextProgress >= 100) {
-        setCurrentStep(Step.CONTACT_COLLECTION);
-        addAssistantMessage("Your requirements are well-defined. To compile our formal advisory specification and schedule a strategic consultation, please provide your professional contact details.");
-      } else {
-        const followUps = [
-          "What is the projected scale of this implementation in terms of user volume or endpoints?",
-          "Regarding the fiscal roadmap, have you allocated a specific budget range for this infrastructure project?",
-          "Excellent insights. Does your current technical stack require legacy integration or a fresh deployment?"
-        ];
-        addAssistantMessage(followUps[Math.floor(Math.random() * followUps.length)]);
-      }
-    }
+    setCurrentStep(Step.CONTACT_COLLECTION);
+    addAssistantMessage("Thank you for those details. To schedule a technical deep-dive with our engineering lead, please share your contact information.");
   };
 
   const submitLead = async (contactInfo: string) => {
     setLeadData(prev => ({ ...prev, email: contactInfo })); 
     setIsTyping(true);
-    
     const conversationHistory = messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
     const summary = await generateInternalSummary(leadData, conversationHistory);
-    
-    setFinalSummary(summary);
-    setCurrentStep(Step.SUMMARY);
+    // Logic to show summary...
+    addAssistantMessage("Request logged successfully. Our Strategic Team will contact you within 2 business hours.");
     setIsTyping(false);
   };
 
   const startVoiceMode = async () => {
     try {
       setVoiceError(null);
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("HardwareSupportError");
-      }
-
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error("HardwareSupportError");
       setIsVoiceMode(true);
       setIsLiveActive(true);
       setIsModelThinking(true);
-      
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 16000});
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
-      const outputNode = outputCtx.createGain();
-      outputNode.connect(outputCtx.destination);
-      
+      if (inputCtx.state === 'suspended') await inputCtx.resume();
+      if (outputCtx.state === 'suspended') await outputCtx.resume();
       audioContextRef.current = { input: inputCtx, output: outputCtx };
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -210,22 +166,16 @@ const App: React.FC = () => {
             setIsModelThinking(false);
             const source = inputCtx.createMediaStreamSource(stream);
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
-            scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
-              const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
-              const pcmBlob = createBlob(inputData);
-              sessionPromise.then((session) => {
-                session.sendRealtimeInput({ media: pcmBlob });
-              });
+            scriptProcessor.onaudioprocess = (e) => {
+              sessionPromise.then(s => s.sendRealtimeInput({ media: createBlob(e.inputBuffer.getChannelData(0)) }));
             };
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputCtx.destination);
+            sessionPromise.then(s => s.sendRealtimeInput({ text: "Introduce yourself as the ShreeanshTech Consultant." }));
           },
-          onmessage: async (message: LiveServerMessage) => {
-            if (message.serverContent?.outputTranscription) {
-              setTranscriptText(prev => prev + message.serverContent!.outputTranscription!.text);
-            }
-
-            const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+          onmessage: async (m) => {
+            if (m.serverContent?.outputTranscription) setTranscriptText(prev => prev + m.serverContent!.outputTranscription!.text);
+            const base64Audio = m.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio) {
               const oCtx = audioContextRef.current?.output;
               if (oCtx) {
@@ -233,305 +183,207 @@ const App: React.FC = () => {
                 const audioBuffer = await decodeAudioData(decode(base64Audio), oCtx, 24000, 1);
                 const source = oCtx.createBufferSource();
                 source.buffer = audioBuffer;
-                source.connect(outputNode);
-                source.addEventListener('ended', () => {
-                  sourcesRef.current.delete(source);
-                });
+                source.connect(oCtx.destination);
                 source.start(nextStartTimeRef.current);
                 nextStartTimeRef.current += audioBuffer.duration;
-                sourcesRef.current.add(source);
               }
             }
-
-            if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => {
-                try { s.stop(); } catch(e) {}
-              });
-              sourcesRef.current.clear();
-              nextStartTimeRef.current = 0;
-            }
           },
-          onerror: (e) => {
-            console.error("Live session error:", e);
-            setVoiceError("Connection disrupted. Reverting to text mode.");
-            stopVoiceMode();
-          },
-          onclose: () => {
-            stopVoiceMode();
-          }
+          onerror: () => { setVoiceError("Link disrupted."); stopVoiceMode(); },
+          onclose: () => stopVoiceMode()
         },
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
-          },
-          systemInstruction: SYSTEM_INSTRUCTION,
-        },
+        config: { 
+          responseModalities: [Modality.AUDIO], 
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
+          systemInstruction: SYSTEM_INSTRUCTION
+        }
       });
-
       sessionPromiseRef.current = sessionPromise;
-    } catch (err) {
-      console.error("Voice start failed:", err);
-      setVoiceError("Microphone access denied or hardware error.");
-      setIsVoiceMode(false);
-    }
+    } catch (err) { setVoiceError("Mic Access Denied."); setIsVoiceMode(false); }
   };
 
   const stopVoiceMode = () => {
-    setIsLiveActive(false);
-    setIsVoiceMode(false);
-    setTranscriptText('');
-    
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-    }
-    
-    if (audioContextRef.current) {
-      audioContextRef.current.input.close().catch(() => {});
-      audioContextRef.current.output.close().catch(() => {});
-    }
-    
-    sourcesRef.current.forEach(s => {
-      try { s.stop(); } catch(e) {}
-    });
-    sourcesRef.current.clear();
-    
+    setIsLiveActive(false); setIsVoiceMode(false); setTranscriptText('');
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    if (audioContextRef.current) { audioContextRef.current.input.close(); audioContextRef.current.output.close(); }
     sessionPromiseRef.current?.then(s => s.close());
-    sessionPromiseRef.current = null;
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans">
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <Cpu className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Shreeansh<span className="text-blue-500">Tech</span></h1>
-            <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Strategic Lead Intelligence</p>
-          </div>
-        </div>
+    <div className="flex justify-center min-h-screen bg-slate-950 sm:py-8 font-sans selection:bg-indigo-500/30">
+      {/* App Container - Mimics high-end Android frame on desktop */}
+      <div className="relative w-full max-w-lg bg-slate-900 sm:rounded-[3rem] sm:border-8 border-slate-800 flex flex-col overflow-hidden shadow-2xl h-[100dvh] sm:h-[850px]">
         
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-medium text-slate-300">Consultant Online</span>
+        {/* Android-style Top Bar */}
+        <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <Cpu className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold tracking-tight">Shreeansh<span className="text-indigo-500">Tech</span></h1>
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Consultant</span>
+              </div>
+            </div>
           </div>
-          <button 
-            onClick={isVoiceMode ? stopVoiceMode : startVoiceMode}
-            className={`p-2.5 rounded-full transition-all ${isVoiceMode ? 'bg-red-500 hover:bg-red-600 ring-4 ring-red-500/20' : 'bg-slate-800 hover:bg-slate-700'}`}
-          >
-            {isVoiceMode ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={startVoiceMode} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400">
+               <Mic className="w-5 h-5" />
+            </button>
+            <button className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400">
+               <MoreVertical className="w-5 h-5" />
+            </button>
+          </div>
+        </header>
+
+        {/* Dynamic Progress Indicator */}
+        <div className="w-full flex gap-1 px-6 pt-2 h-1 mb-2">
+           {Object.values(Step).map((s, i) => (
+             <div key={s} className={`flex-1 rounded-full h-full transition-all duration-500 ${
+               Object.values(Step).indexOf(currentStep) >= i ? 'bg-indigo-500' : 'bg-slate-800'
+             }`} />
+           ))}
         </div>
-      </header>
 
-      <main className="flex-1 flex flex-col md:flex-row overflow-hidden max-w-[1600px] mx-auto w-full">
-        <aside className="w-full md:w-80 border-r border-slate-800 p-6 flex flex-col gap-8 bg-slate-900/20">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Discovery Phase</h2>
-            <div className="space-y-4">
-              {[
-                { step: Step.GREETING, label: 'Identity Discovery', icon: User },
-                { step: Step.ID_REQUIREMENT, label: 'Domain Mapping', icon: LayoutDashboard },
-                { step: Step.QUALIFICATION, label: 'Technical Qualification', icon: Zap },
-                { step: Step.CONTACT_COLLECTION, label: 'Strategic Alignment', icon: PhoneCall },
-                { step: Step.SUMMARY, label: 'Executive Brief', icon: BarChart3 },
-              ].map((item, idx) => {
-                const isActive = currentStep === item.step;
-                const isPast = Object.values(Step).indexOf(currentStep) > idx;
-                return (
-                  <div key={item.step} className={`flex items-center gap-3 transition-colors ${isActive ? 'text-blue-400' : isPast ? 'text-emerald-400' : 'text-slate-600'}`}>
-                    <div className={`p-2 rounded-lg border ${isActive ? 'bg-blue-500/10 border-blue-500/50' : isPast ? 'bg-emerald-500/10 border-emerald-500/50' : 'border-slate-800'}`}>
-                      <item.icon className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-medium">{item.label}</span>
-                    {isPast && <CheckCircle2 className="w-4 h-4 ml-auto" />}
-                  </div>
-                );
-              })}
+        {/* Chat Canvas */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex w-full ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
+              <div className={`max-w-[85%] px-4 py-3 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-2 ${
+                msg.role === 'assistant' 
+                  ? 'bg-slate-800/50 border border-slate-700 text-slate-200 rounded-2xl rounded-bl-none' 
+                  : 'bg-indigo-600 text-white rounded-2xl rounded-br-none'
+              }`}>
+                <p className="text-[14px] leading-relaxed font-medium">{msg.content}</p>
+                <span className="text-[9px] mt-2 block opacity-40 font-bold tracking-tighter uppercase">
+                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
             </div>
-          </div>
+          ))}
 
-          <div className="mt-auto p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl">
-            <h3 className="text-xs font-bold text-blue-400 uppercase mb-2">Technical Capabilities</h3>
-            <ul className="text-[11px] text-slate-400 space-y-2">
-              <li className="flex items-center gap-2"><Lock className="w-3 h-3" /> Zero Trust Security</li>
-              <li className="flex items-center gap-2"><Cpu className="w-3 h-3" /> Custom RAG Pipelines</li>
-              <li className="flex items-center gap-2"><Globe className="w-3 h-3" /> Enterprise SaaS</li>
-            </ul>
-          </div>
-        </aside>
-
-        <section className="flex-1 flex flex-col relative bg-slate-950">
-          <div 
-            ref={scrollRef}
-            className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6"
-          >
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${
-                  msg.role === 'assistant' 
-                    ? 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none' 
-                    : 'bg-blue-600 text-white rounded-tr-none'
-                }`}>
-                  <div className="flex items-center gap-2 mb-1 opacity-50 text-[10px] font-bold uppercase tracking-tighter">
-                    {msg.role === 'assistant' ? <Sparkles className="w-3 h-3" /> : <User className="w-3 h-3" />}
-                    {msg.role} • {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                </div>
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-slate-800/50 p-3 rounded-2xl rounded-bl-none flex gap-1 animate-pulse">
+                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full opacity-60" />
+                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full opacity-30" />
               </div>
-            ))}
-
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl rounded-tl-none flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]" />
-                </div>
-              </div>
-            )}
-
-            {currentStep === Step.ID_REQUIREMENT && !isTyping && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                {[
-                  { 
-                    cat: ServiceCategory.CYBERSECURITY, 
-                    icon: ShieldCheck, 
-                    desc: 'Advanced network hardening, zero-trust security architecture, and proactive threat detection to safeguard your enterprise.' 
-                  },
-                  { 
-                    cat: ServiceCategory.SOFTWARE_DEV, 
-                    icon: Code, 
-                    desc: 'Custom-engineered ERP systems and scalable software solutions designed to unify complex business workflows.' 
-                  },
-                  { 
-                    cat: ServiceCategory.AI_AUTOMATION, 
-                    icon: Cpu, 
-                    desc: 'Intelligent AI agents, WhatsApp automation, and custom RAG pipelines to revolutionize operational efficiency.' 
-                  },
-                  { 
-                    cat: ServiceCategory.WEB_DEV, 
-                    icon: Globe, 
-                    desc: 'High-performance corporate portals and high-authority transactional platforms optimized for growth and engagement.' 
-                  },
-                ].map(item => (
-                  <button
-                    key={item.cat}
-                    onClick={() => selectService(item.cat)}
-                    className="flex items-center gap-4 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:border-blue-500/50 hover:bg-slate-800/50 transition-all text-left group"
-                  >
-                    <div className="p-3 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 shrink-0">
-                      <item.icon className="w-6 h-6 text-blue-400" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm">{item.cat}</div>
-                      <div className="text-xs text-slate-500 mt-1 leading-relaxed">{item.desc}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {currentStep === Step.SUMMARY && finalSummary && (
-              <div className="mt-6 bg-slate-900 border border-blue-500/30 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-blue-400" />
-                    <h3 className="font-bold text-sm tracking-tight uppercase">Strategic Executive Summary</h3>
-                  </div>
-                  <div className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-[10px] font-bold">
-                    {finalSummary.leadType || 'Analysis Pending'}
-                  </div>
-                </div>
-                <div className="p-6 space-y-6">
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
-                      <ClipboardList className="w-3 h-3" /> Overview
-                    </h4>
-                    <p className="text-sm text-slate-300 italic">{finalSummary.executiveSummary}</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                      <h4 className="text-xs font-bold text-emerald-400 uppercase mb-2">Technical Recommendations</h4>
-                      <p className="text-xs text-slate-400 leading-relaxed">{finalSummary.technicalNotes}</p>
-                    </div>
-                    <div className="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                      <h4 className="text-xs font-bold text-blue-400 uppercase mb-2">Next Strategic Steps</h4>
-                      <ul className="text-xs text-slate-400 space-y-2">
-                        <li className="flex items-start gap-2">• NDA Execution</li>
-                        <li className="flex items-start gap-2">• Architecture Deep-Dive</li>
-                        <li className="flex items-start gap-2">• Resource Scoping</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="p-4 border-t border-slate-800 bg-slate-900/50">
-            <div className="max-w-4xl mx-auto relative">
-              <input 
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder={currentStep === Step.CONTACT_COLLECTION ? "Enter email/phone..." : "Consult with our AI Architect..."}
-                disabled={currentStep === Step.SUMMARY}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-4 pl-6 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all disabled:opacity-50"
-              />
-              <button 
-                onClick={() => handleSendMessage()}
-                disabled={currentStep === Step.SUMMARY || !inputValue.trim()}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 rounded-lg transition-colors"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {isVoiceMode && (
-            <div className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center">
-              <button 
-                onClick={stopVoiceMode}
-                className="absolute top-8 right-8 p-3 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              
-              <div className="relative mb-12">
-                <div className={`w-32 h-32 bg-blue-500 rounded-full blur-2xl absolute inset-0 opacity-20 ${isLiveActive ? 'animate-pulse' : ''}`} />
-                <div className={`w-32 h-32 border-4 border-blue-500/30 rounded-full flex items-center justify-center relative z-10 ${isLiveActive ? 'scale-110 transition-transform duration-300' : ''}`}>
-                  {isModelThinking ? (
-                    <Sparkles className="w-12 h-12 text-blue-400 animate-spin" />
-                  ) : (
-                    <Waves className={`w-12 h-12 text-blue-400 ${isLiveActive ? 'animate-bounce' : ''}`} />
-                  )}
-                </div>
-              </div>
-
-              <h2 className="text-2xl font-bold mb-2 tracking-tight">Consulting Session Active</h2>
-              <p className="text-slate-400 text-sm max-w-md mb-8">
-                {isModelThinking ? "Establishing secure link..." : "Our Strategic Architect is listening to your requirements."}
-              </p>
-
-              <div className="w-full max-w-lg bg-slate-900/50 border border-slate-800 p-6 rounded-2xl min-h-[100px] flex items-center justify-center italic text-slate-500 text-sm">
-                {transcriptText || "Awaiting transcription..."}
-              </div>
-
-              {voiceError && (
-                <div className="mt-8 flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-2 rounded-lg border border-red-400/20 text-xs">
-                  <AlertCircle className="w-4 h-4" />
-                  {voiceError}
-                </div>
-              )}
             </div>
           )}
-        </section>
-      </main>
+
+          {currentStep === Step.ID_REQUIREMENT && !isTyping && (
+            <div className="grid grid-cols-2 gap-3 mt-4 animate-in fade-in zoom-in-95 duration-500">
+              {[
+                { cat: ServiceCategory.CYBERSECURITY, icon: ShieldCheck, color: 'text-rose-400' },
+                { cat: ServiceCategory.SOFTWARE_DEV, icon: Code, color: 'text-sky-400' },
+                { cat: ServiceCategory.AI_AUTOMATION, icon: Cpu, color: 'text-indigo-400' },
+                { cat: ServiceCategory.WEB_DEV, icon: Globe, color: 'text-emerald-400' },
+              ].map(item => (
+                <button
+                  key={item.cat}
+                  onClick={() => selectService(item.cat)}
+                  className="p-4 bg-slate-800/40 border border-slate-700/50 rounded-3xl hover:border-indigo-500/50 hover:bg-slate-800 transition-all text-left flex flex-col gap-3 group active:scale-95"
+                >
+                  <div className={`p-2 bg-slate-900 rounded-xl w-fit ${item.color}`}>
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-200 leading-tight">{item.cat}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Pill Input Bar */}
+        <footer className="p-6 bg-slate-900/80 backdrop-blur-xl border-t border-slate-800/50">
+          <div className="relative flex items-center bg-slate-800/50 border border-slate-700/50 rounded-full px-5 py-2 group focus-within:border-indigo-500/50 transition-all shadow-inner">
+            <input 
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Message Consultant..."
+              className="flex-1 bg-transparent border-none text-sm placeholder:text-slate-600 focus:outline-none py-2"
+            />
+            <button 
+              onClick={() => handleSendMessage()}
+              disabled={!inputValue.trim()}
+              className="ml-2 p-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-full transition-all shadow-lg active:scale-90"
+            >
+              <Send className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        </footer>
+
+        {/* Android Voice Overlay */}
+        {isVoiceMode && (
+          <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-3xl flex flex-col items-center justify-between p-10 animate-in fade-in slide-in-from-bottom-10 duration-500">
+            <div className="w-full flex justify-between items-center">
+               <button onClick={stopVoiceMode} className="p-3 bg-slate-800/50 rounded-full text-slate-400 border border-slate-700">
+                  <X className="w-6 h-6" />
+               </button>
+               <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/30 rounded-full text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+                  <Lock className="w-3 h-3" /> Secure AI Session
+               </div>
+               <button className="p-3 bg-slate-800/50 rounded-full text-slate-400 border border-slate-700">
+                  <Settings className="w-6 h-6" />
+               </button>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="relative mb-16">
+                {/* Organic Glowing Orb */}
+                <div className="w-48 h-48 bg-indigo-600 rounded-full blur-[80px] absolute inset-0 opacity-40 animate-pulse" />
+                <div className={`w-32 h-32 rounded-full border-4 border-indigo-500/20 flex items-center justify-center relative z-10 transition-transform duration-700 ${!isModelThinking ? 'scale-110' : 'scale-90'}`}>
+                   {isModelThinking ? (
+                     <div className="w-16 h-1 bg-indigo-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(99,102,241,0.8)]" />
+                   ) : (
+                     <div className="flex gap-2 items-end h-10">
+                        {[0,1,2,3,4].map(i => (
+                          <div key={i} 
+                            className="w-1.5 bg-indigo-400 rounded-full animate-[vibe_0.8s_infinite_ease-in-out]" 
+                            style={{ height: '100%', animationDelay: `${i * 0.1}s` }} 
+                          />
+                        ))}
+                     </div>
+                   )}
+                </div>
+              </div>
+              <h2 className="text-xl font-bold mb-3 tracking-tight">Listening...</h2>
+              <div className="bg-slate-900/50 border border-slate-800 px-8 py-6 rounded-[2rem] min-h-[140px] w-full max-w-sm flex items-center justify-center italic text-slate-400 text-sm leading-relaxed">
+                {transcriptText || "Describe your business challenge..."}
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+               <button onClick={stopVoiceMode} className="px-8 py-4 bg-slate-800 rounded-full text-sm font-bold text-slate-300 border border-slate-700 active:scale-95 transition-all">
+                  Switch to Text
+               </button>
+               <button onClick={stopVoiceMode} className="px-8 py-4 bg-indigo-600 rounded-full text-sm font-bold text-white shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">
+                  End Consultation
+               </button>
+            </div>
+
+            {voiceError && (
+              <div className="flex items-center gap-2 text-rose-400 bg-rose-400/10 px-4 py-2 rounded-full border border-rose-400/20 text-xs font-bold animate-bounce">
+                <AlertCircle className="w-4 h-4" /> {voiceError}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes vibe {
+          0%, 100% { height: 30%; opacity: 0.4; }
+          50% { height: 100%; opacity: 1; }
+        }
+        input::placeholder { font-weight: 500; }
+        .rounded-2xl { border-radius: 1.5rem; }
+        .rounded-3xl { border-radius: 2rem; }
+      `}</style>
     </div>
   );
 };
