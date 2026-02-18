@@ -3,44 +3,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ShreeanshTech AI Solutions Consultant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ShreeanshTech AI Support</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --system-bg: #020617;
+      --app-bg: #05070a;
     }
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--system-bg);
+      background-color: #000;
       color: #f8fafc;
-      overflow-x: hidden;
-      /* Smooth scrolling for mobile */
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden;
+      touch-action: manipulation;
     }
-    /* Material You Scrollbar */
-    ::-webkit-scrollbar {
-      width: 4px;
+    .app-container {
+      background-color: var(--app-bg);
+      height: 100dvh;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 100px rgba(0,0,0,0.5);
     }
-    ::-webkit-scrollbar-track {
-      background: transparent;
+    @media (min-width: 640px) {
+      body {
+        background-color: #020408;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .app-container {
+        height: 850px;
+        border-radius: 48px;
+        border: 12px solid #161a20;
+        overflow: hidden;
+      }
     }
-    ::-webkit-scrollbar-thumb {
-      background: #1e293b;
-      border-radius: 10px;
+    /* Hide scrollbar but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.4",
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "@google/genai": "https://esm.sh/@google/genai@1.41.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.474.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
     "vite": "https://esm.sh/vite@^7.3.1",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4"
   }
@@ -48,7 +72,7 @@
 </script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root" class="w-full h-full flex items-center justify-center"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
